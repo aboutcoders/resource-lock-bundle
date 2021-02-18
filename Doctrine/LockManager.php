@@ -31,8 +31,6 @@ class LockManager extends BaseLockManager
     protected $repository;
     /** @var string Lock prefix for manager */
     protected $prefix;
-    /** @var int Time in seconds - default value is 30 minutes - when value is 0 or smaller then automatic release lock feature is disabled */
-    protected $autoReleaseTime = 30 * 60;
 
     /**
      * @param ObjectManager $om     Doctrine object manager
@@ -72,7 +70,12 @@ class LockManager extends BaseLockManager
         }
     }
 
-    public function isLocked($name)
+    /**
+     * @param string $name
+     * @param int    $autoReleaseTime Time in seconds - default value is 0 - when value is 0 or smaller then automatic release lock feature is disabled
+     * @return bool
+     */
+    public function isLocked($name, int $autoReleaseTime = 0)
     {
         $nameWithPrefix = $this->getNameWithPrefix($name);
 
@@ -80,7 +83,7 @@ class LockManager extends BaseLockManager
         $lock           = $this->findByName($nameWithPrefix);
 
         $actualDate = new \DateTime();
-        if (isset($lock) && ($this->autoReleaseTime > 0) && ($lock->getCreatedAt()->modify('+' . $this->autoReleaseTime . 's') < $actualDate)) {
+        if (isset($lock) && ($autoReleaseTime > 0) && ($lock->getCreatedAt()->modify('+' . $autoReleaseTime . 's') < $actualDate)) {
             $this->release($name);
             return false;
         }
