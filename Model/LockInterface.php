@@ -25,10 +25,11 @@ interface LockInterface
     public function lock($name);
 
     /**
-     * @param string $name Resource name
-     * @return boolean
+     * @param string $name
+     * @param int    $autoReleaseTime Time in seconds - default value is 0 - when value is 0 or smaller then automatic release lock feature is disabled
+     * @return bool
      */
-    public function isLocked($name);
+    public function isLocked($name, int $autoReleaseTime = 0);
 
     /**
      * @param string $name Resource name
