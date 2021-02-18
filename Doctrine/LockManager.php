@@ -83,7 +83,7 @@ class LockManager extends BaseLockManager
         $lock           = $this->findByName($nameWithPrefix);
 
         $actualDate = new \DateTime();
-        if (isset($lock) && ($autoReleaseTime > 0) && ($lock->getCreatedAt()->modify('+' . $autoReleaseTime . 's') < $actualDate)) {
+        if (isset($lock) && ($autoReleaseTime > 0) && ($lock->getCreatedAt()->modify('+' . $autoReleaseTime . ' seconds') < $actualDate)) {
             $this->release($name);
             return false;
         }
