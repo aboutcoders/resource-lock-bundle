@@ -35,4 +35,12 @@ interface LockInterface
      * @return boolean
      */
     public function release($name);
+
+    /**
+     * Set autotomatic release time
+     *
+     * @param int $autoReleaseTime Time in second after which the lock will be released automatically
+     * @return $this
+     */
+    public function setAutoReleaseTime(int $autoReleaseTime);
 }

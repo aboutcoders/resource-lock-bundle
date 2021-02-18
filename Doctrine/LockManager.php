@@ -12,6 +12,7 @@ namespace Abc\Bundle\ResourceLockBundle\Doctrine;
 
 use Abc\Bundle\ResourceLockBundle\Exception\LockException;
 use Abc\Bundle\ResourceLockBundle\Model\LockManager as BaseLockManager;
+use Abc\Bundle\ResourceLockBundle\Model\ResourceLock;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\DBAL\Exception\ServerException;
@@ -30,6 +31,8 @@ class LockManager extends BaseLockManager
     protected $repository;
     /** @var string Lock prefix for manager */
     protected $prefix;
+    /** @var int Time in seconds - default value is 30 minutes - when value is 0 or smaller then automatic release lock feature is disabled */
+    protected $autoReleaseTime = 30 * 60;
 
     /**
      * @param ObjectManager $om     Doctrine object manager
@@ -72,7 +75,16 @@ class LockManager extends BaseLockManager
     public function isLocked($name)
     {
         $nameWithPrefix = $this->getNameWithPrefix($name);
+
+        /** @var ResourceLock $lock */
         $lock           = $this->findByName($nameWithPrefix);
+
+        $actualDate = new \DateTime();
+        if (isset($lock) && ($this->autoReleaseTime > 0) && ($lock->getCreatedAt()->modify('+' . $this->autoReleaseTime . 's') < $actualDate)) {
+            $this->release($name);
+            return false;
+        }
+
         return $lock ? true : false;
     }
 
@@ -87,7 +99,6 @@ class LockManager extends BaseLockManager
         }
         return false;
     }
-
 
     /**
      * {@inheritDoc}
@@ -106,5 +117,17 @@ class LockManager extends BaseLockManager
     private function getNameWithPrefix($name)
     {
         return $this->prefix . '-' . $name;
+    }
+
+    /**
+     * Set autotomatic release time
+     *
+     * @param int $autoReleaseTime Time in second after which the lock will be released automatically
+     * @return $this
+     */
+    public function setAutoReleaseTime(int $autoReleaseTime)
+    {
+        $this->autoReleaseTime = $autoReleaseTime;
+        return $this;
     }
 }
