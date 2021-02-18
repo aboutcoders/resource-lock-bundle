@@ -94,6 +94,48 @@ class LockManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($result);
     }
 
+    public function testIsLockedWithExistingLockAndAutoReleasedIsSetLockExpiredReturnsFalse()
+    {
+        $lockName           = 'ABC';
+        $lockNameWithPrefix = $this->prefix . '-ABC';
+
+        $createdAt = new \DateTime();
+        $createdAt->modify('-1 hour');
+
+        $lockObj = new ResourceLock();
+        $lockObj->setCreatedAt($createdAt);
+
+        $this->repository->expects($this->exactly(2))
+            ->method('findOneBy')
+            ->with(['name' => $lockNameWithPrefix])
+            ->willReturn($lockObj);
+
+        $result = $this->subject->isLocked($lockName,1800);
+
+        $this->assertFalse($result);
+    }
+
+    public function testIsLockedWithExistingLockAndAutoReleasedIsSetLockNotExpiredReturnsTrue()
+    {
+        $lockName           = 'ABC';
+        $lockNameWithPrefix = $this->prefix . '-ABC';
+
+        $createdAt = new \DateTime();
+        $createdAt->modify('-1 hour');
+
+        $lockObj = new ResourceLock();
+        $lockObj->setCreatedAt($createdAt);
+
+        $this->repository->expects($this->exactly(1))
+            ->method('findOneBy')
+            ->with(['name' => $lockNameWithPrefix])
+            ->willReturn($lockObj);
+
+        $result = $this->subject->isLocked($lockName,7200);
+
+        $this->assertTrue($result);
+    }
+
     public function testLockWithNoExistingLockReturnsTrue()
     {
         $lockName = 'ABC';
