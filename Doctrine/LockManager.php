@@ -121,16 +121,4 @@ class LockManager extends BaseLockManager
     {
         return $this->prefix . '-' . $name;
     }
-
-    /**
-     * Set autotomatic release time
-     *
-     * @param int $autoReleaseTime Time in second after which the lock will be released automatically
-     * @return $this
-     */
-    public function setAutoReleaseTime(int $autoReleaseTime)
-    {
-        $this->autoReleaseTime = $autoReleaseTime;
-        return $this;
-    }
 }
